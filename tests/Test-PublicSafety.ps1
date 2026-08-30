@@ -147,6 +147,9 @@ try {
     $workflowText = Get-Content `
         -LiteralPath (Join-Path $repoRoot '.github\workflows\validate.yml') `
         -Raw -Encoding UTF8
+    $installationText = Get-Content `
+        -LiteralPath (Join-Path $repoRoot 'docs\INSTALLATION.md') `
+        -Raw -Encoding UTF8
     Assert-True ($buildText -match '\$PSVersionTable\.PSEdition\s+-ceq\s+''Desktop''') `
         'release builder requires Windows PowerShell Desktop edition'
     Assert-True ($buildText -match '\$PSVersionTable\.PSVersion\.Major\s+-eq\s+5' -and
@@ -154,6 +157,40 @@ try {
         'release builder requires PowerShell version 5.1 exactly'
     Assert-True ($buildText -match '\[Environment\]::Is64BitProcess') `
         'release builder requires a 64-bit process'
+    Assert-True ($buildText -match [regex]::Escape('docs\RELEASE_README.md') -and
+        $buildText -match [regex]::Escape('docs\INSTALLATION.md') -and
+        $buildText -match [regex]::Escape('SECURITY.md')) `
+        'release builder packages the reviewed offline operator documents'
+    Assert-True ($buildText -notmatch '(?i)LICENSE') `
+        'release builder does not fabricate a license before a license decision'
+    $installationPowerShellBlocks = @([regex]::Matches(
+        $installationText,
+        '(?ms)^```powershell\r?\n(.*?)^```'
+    ))
+    Assert-True ($installationPowerShellBlocks.Count -ge 4) `
+        'installation guide carries complete verify, extract, install, and uninstall commands'
+    foreach ($block in $installationPowerShellBlocks) {
+        $tokens = $null
+        $errors = $null
+        [Management.Automation.Language.Parser]::ParseInput(
+            $block.Groups[1].Value,
+            [ref]$tokens,
+            [ref]$errors
+        ) | Out-Null
+        Assert-Equal @($errors).Count 0 'installation PowerShell example parses without syntax errors'
+    }
+    Assert-True (
+        $installationText.IndexOf('Get-FileHash', [StringComparison]::Ordinal) -ge 0 -and
+        $installationText.IndexOf('Unblock-File', [StringComparison]::Ordinal) -gt
+        $installationText.IndexOf('Get-FileHash', [StringComparison]::Ordinal)
+    ) 'Mark-of-the-Web removal is documented only after SHA-256 verification'
+    Assert-True ($installationText -notmatch '(?i)Unblock-File[^\r\n]*(?:-Recurse|Get-ChildItem)') `
+        'installation guide never recursively unblocks files'
+    Assert-True ($installationText -match [regex]::Escape('chrome://extensions') -and
+        $installationText -match [regex]::Escape('Developer mode') -and
+        $installationText -match [regex]::Escape('Load unpacked') -and
+        $installationText -match [regex]::Escape('%LOCALAPPDATA%\TaipowerAMIV2\ChromeExtension')) `
+        'installation guide documents the complete fixed-ID unpacked-extension workflow'
     Assert-True ($ciBootstrapText -notmatch '(?im)^\s*Remove-Item[^\r\n]*-Recurse\b') `
         'CI toolchain bootstrap never recursively deletes a caller-selected path'
     Assert-True ($ciBootstrapText -match '\[IO\.Path\]::DirectorySeparatorChar' -and

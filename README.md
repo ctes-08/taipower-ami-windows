@@ -14,6 +14,11 @@ version **2.0.1**:
 - a user-scoped LocalAppData installer and uninstaller; and
 - deterministic unsigned release construction with SHA-256 provenance.
 
+Built unsigned archives also carry an offline release README, the complete
+installation procedure, and the security policy. All three files are included
+in `SHA256SUMS`; the installer rejects a package when they are missing or have
+changed.
+
 The user signs in to the official Taipower website in a normal visible Chrome
 window and completes any human verification personally. The project does not
 store or fill the account password, automate CAPTCHA/Turnstile, use remote

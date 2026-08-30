@@ -37,9 +37,28 @@ $outputRoot = Resolve-TaipowerAMIAbsoluteLocalPath -Path $OutputDirectory -Allow
 $sourcePath = Join-Path $sourceRoot 'src\NativeHostLauncher.cs'
 $lockPath = Join-Path $sourceRoot 'NativeHostToolchain.lock.json'
 $extensionRoot = Join-Path $sourceRoot 'chrome_extension'
+$releaseDocuments = @(
+    [pscustomobject]@{
+        Source = 'docs\RELEASE_README.md'
+        Destination = 'README.md'
+    },
+    [pscustomobject]@{
+        Source = 'docs\INSTALLATION.md'
+        Destination = 'INSTALLATION.md'
+    },
+    [pscustomobject]@{
+        Source = 'SECURITY.md'
+        Destination = 'SECURITY.md'
+    }
+)
 
 if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
     throw 'The reviewed common NativeHostLauncher.cs has not been added to this repository.'
+}
+foreach ($document in $releaseDocuments) {
+    if (-not (Test-Path -LiteralPath (Join-Path $sourceRoot $document.Source) -PathType Leaf)) {
+        throw ('Required release document is missing: ' + $document.Source)
+    }
 }
 $toolchain = Resolve-TaipowerAMIPinnedToolchain `
     -LockPath $lockPath `
@@ -100,6 +119,11 @@ try {
         'PublicCommon.psm1'
     )) {
         Copy-Item -LiteralPath (Join-Path $sourceRoot $name) -Destination (Join-Path $installerRoot $name)
+    }
+    foreach ($document in $releaseDocuments) {
+        Copy-Item `
+            -LiteralPath (Join-Path $sourceRoot $document.Source) `
+            -Destination (Join-Path $packageRoot $document.Destination)
     }
 
     $manifestTemplate = New-TaipowerAMINativeManifest `

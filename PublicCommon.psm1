@@ -464,7 +464,17 @@ function Test-TaipowerAMIUnsignedPackage {
     $metadataPath = Join-Path $root 'release_metadata.json'
     $sumsPath = Join-Path $root 'SHA256SUMS'
     $exePath = Join-Path $root 'NativeHost\TaipowerAMINativeHostV2.exe'
-    foreach ($path in @($metadataPath, $sumsPath, $exePath)) {
+    $releaseReadmePath = Join-Path $root 'README.md'
+    $installationPath = Join-Path $root 'INSTALLATION.md'
+    $securityPath = Join-Path $root 'SECURITY.md'
+    foreach ($path in @(
+        $metadataPath,
+        $sumsPath,
+        $exePath,
+        $releaseReadmePath,
+        $installationPath,
+        $securityPath
+    )) {
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
             throw 'Unsigned release package is incomplete.'
         }

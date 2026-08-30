@@ -38,8 +38,11 @@ The builder:
 3. compiles both with `/deterministic+` and a stable `/pathmap`;
 4. requires identical executable bytes and SHA-256 values;
 5. rejects overwrite of existing release artifacts;
-6. emits unsigned release metadata and `SHA256SUMS`; and
-7. creates a sorted ZIP with fixed entry timestamps plus a sidecar SHA-256.
+6. copies the reviewed release README, installation procedure, and security
+   policy into the package;
+7. emits unsigned release metadata and a `SHA256SUMS` that covers those
+   documents and every other packaged file; and
+8. creates a sorted ZIP with fixed entry timestamps plus a sidecar SHA-256.
 
 Run the complete local gate:
 
@@ -65,7 +68,9 @@ negative probe as skipped when PowerShell 7 is not installed.
 both its text and executable byte representations for private identity,
 environment, signing, and credential material. It also verifies that release
 metadata, the extension manifest, and the Native Host file version all carry
-2.0.1. The 2.0.1 gate additionally pins the reviewed private/public
+2.0.1. It requires byte-exact packaged copies of the release README,
+installation procedure, and security policy, and confirms that `SHA256SUMS`
+covers them. The 2.0.1 gate additionally pins the reviewed private/public
 cross-channel unsigned Native Host SHA-256 so that packaging-only differences
 cannot silently change the shared executable. The pinned value is the 2.0.1
 pre-signing executable, not the separate 2.0.0 rollback-lab fixture. A source

@@ -8,6 +8,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = [IO.Path]::GetDirectoryName($PSScriptRoot)
+Import-Module (Join-Path $repoRoot 'PublicCommon.psm1') -Force
 $testRoot = Join-Path $repoRoot ('.test-output\package-neutrality-' + [Guid]::NewGuid().ToString('N'))
 $releaseOutput = Join-Path $testRoot 'release'
 $script:Passed = 0
@@ -40,6 +41,40 @@ try {
         'Native Host file version carries version 2.0.1'
     Assert-True ([string]$release.NativeHostSha256 -ceq $reviewedCompatibilitySha256) `
         '2.0.1 Native Host matches the reviewed cross-channel unsigned binary'
+    $validatedPackage = Test-TaipowerAMIUnsignedPackage -PackageRoot $release.Package
+    Assert-True ([string]$validatedPackage.Root -ceq [string]$release.Package) `
+        'installer package validator accepts the complete reviewed release'
+
+    $releaseDocuments = @(
+        [pscustomobject]@{
+            Source = 'docs\RELEASE_README.md'
+            Packaged = 'README.md'
+        },
+        [pscustomobject]@{
+            Source = 'docs\INSTALLATION.md'
+            Packaged = 'INSTALLATION.md'
+        },
+        [pscustomobject]@{
+            Source = 'SECURITY.md'
+            Packaged = 'SECURITY.md'
+        }
+    )
+    $sumLines = @(Get-Content -LiteralPath (Join-Path $release.Package 'SHA256SUMS') -Encoding UTF8)
+    foreach ($document in $releaseDocuments) {
+        $sourceBytes = [IO.File]::ReadAllBytes((Join-Path $repoRoot $document.Source))
+        $packagedPath = Join-Path $release.Package $document.Packaged
+        Assert-True (Test-Path -LiteralPath $packagedPath -PathType Leaf) `
+            ('release contains ' + $document.Packaged)
+        Assert-True ([Linq.Enumerable]::SequenceEqual(
+            [byte[]]$sourceBytes,
+            [byte[]][IO.File]::ReadAllBytes($packagedPath)
+        )) ('packaged document is byte-identical to reviewed source: ' + $document.Packaged)
+        Assert-True (@($sumLines | Where-Object {
+            $_ -cmatch ('^[0-9A-F]{64}  ' + [regex]::Escape($document.Packaged) + '$')
+        }).Count -eq 1) ('SHA256SUMS covers ' + $document.Packaged)
+    }
+    Assert-True (-not (Test-Path -LiteralPath (Join-Path $release.Package 'LICENSE') -PathType Leaf)) `
+        'builder does not fabricate a license file before a license decision'
 
     $representations = [Collections.Generic.List[string]]::new()
     foreach ($file in Get-ChildItem -LiteralPath $release.Package -File -Recurse) {

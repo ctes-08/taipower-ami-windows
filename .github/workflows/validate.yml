@@ -6,6 +6,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: Optional version for a gated unsigned candidate artifact
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -245,3 +250,37 @@ jobs:
           if ($LASTEXITCODE -ne 0 -or $dirty.Count -ne 0) {
             throw ('Gate changed the source tree:' + "`n" + ($dirty -join "`n"))
           }
+
+      - name: Build manually requested unsigned candidate
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          github.ref == 'refs/heads/main' &&
+          inputs.release_version != ''
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+          if ($env:RELEASE_VERSION -cnotmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$') {
+            throw 'release_version is not a supported release version.'
+          }
+          & .\Build-UnsignedRelease.ps1 `
+            -Version $env:RELEASE_VERSION `
+            -OutputDirectory (Join-Path $env:GITHUB_WORKSPACE 'artifacts') `
+            -ToolchainRoot $env:TAIPOWER_TOOLCHAIN_ROOT `
+            -ProgramFilesX86 $env:TAIPOWER_PROGRAM_FILES_X86
+
+      - name: Upload manually requested unsigned candidate
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          github.ref == 'refs/heads/main' &&
+          inputs.release_version != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: taipower-ami-windows-${{ inputs.release_version }}-unsigned
+          path: |
+            artifacts/taipower-ami-windows-${{ inputs.release_version }}-unsigned.zip
+            artifacts/taipower-ami-windows-${{ inputs.release_version }}-unsigned.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0

@@ -38,8 +38,9 @@ The builder:
 3. compiles both with `/deterministic+` and a stable `/pathmap`;
 4. requires identical executable bytes and SHA-256 values;
 5. rejects overwrite of existing release artifacts;
-6. copies the reviewed release README, installation procedure, security
-   policy, and Apache License 2.0 terms into the package;
+6. copies the reviewed release README, installation procedure, privacy,
+   security, and Code signing policies, and Apache License 2.0 terms into the
+   package;
 7. emits unsigned release metadata and a `SHA256SUMS` that covers those
    documents and every other packaged file; and
 8. creates a sorted ZIP with fixed entry timestamps plus a sidecar SHA-256.
@@ -69,8 +70,9 @@ both its text and executable byte representations for private identity,
 environment, signing, and credential material. It also verifies that release
 metadata, the extension manifest, and the Native Host file version all carry
 2.0.1. It requires byte-exact packaged copies of the release README,
-installation procedure, security policy, and license, and confirms that
-`SHA256SUMS` covers them. The 2.0.1 gate additionally pins the reviewed
+installation procedure, privacy and security policies, Code signing policy,
+and license, and confirms that `SHA256SUMS` covers them. The 2.0.1 gate
+additionally pins the reviewed
 private/public cross-channel unsigned Native Host SHA-256 so that
 packaging-only differences cannot silently change the shared executable. The
 pinned value is the 2.0.1 pre-signing executable, not the separate 2.0.0
@@ -98,9 +100,11 @@ job; there is no fallback to another compiler.
 
 The workflow requires exactly one documented destination-test skip because a
 public runner has no reviewed live UNC share. It also requires the PowerShell 7
-negative-host probe to execute with no skip. CI deliberately uploads no ZIP or
-EXE: release artifacts are created only from a reviewed clean commit after the
-separate Windows VM matrix is complete.
+negative-host probe to execute with no skip. Pull-request and ordinary push CI
+upload no ZIP or EXE. An explicit `workflow_dispatch` from `main` with a valid
+`release_version` may upload the unsigned ZIP and sidecar only after the full
+gate passes. The result remains a candidate; publication still requires the
+separate Windows VM matrix.
 
 The source checkout may be dirty during development, but publication requires
 `source_tree_state: clean`, an immutable source commit, identical results from

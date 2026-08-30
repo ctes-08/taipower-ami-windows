@@ -467,6 +467,8 @@ function Test-TaipowerAMIUnsignedPackage {
     $releaseReadmePath = Join-Path $root 'README.md'
     $installationPath = Join-Path $root 'INSTALLATION.md'
     $securityPath = Join-Path $root 'SECURITY.md'
+    $privacyPath = Join-Path $root 'PRIVACY.md'
+    $codeSigningPolicyPath = Join-Path $root 'CODE_SIGNING_POLICY.md'
     $licensePath = Join-Path $root 'LICENSE'
     foreach ($path in @(
         $metadataPath,
@@ -475,6 +477,8 @@ function Test-TaipowerAMIUnsignedPackage {
         $releaseReadmePath,
         $installationPath,
         $securityPath,
+        $privacyPath,
+        $codeSigningPolicyPath,
         $licensePath
     )) {
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {

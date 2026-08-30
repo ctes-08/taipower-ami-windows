@@ -15,9 +15,9 @@ version **2.0.1**:
 - deterministic unsigned release construction with SHA-256 provenance.
 
 Built unsigned archives also carry an offline release README, the complete
-installation procedure, the security policy, and the Apache License 2.0 text.
-All four files are included in `SHA256SUMS`; the installer rejects a package
-when they are missing or have changed.
+installation procedure, privacy and security policies, the code-signing policy,
+and the Apache License 2.0 text. All six files are included in `SHA256SUMS`; the
+installer rejects a package when they are missing or have changed.
 
 The user signs in to the official Taipower website in a normal visible Chrome
 window and completes any human verification personally. The project does not
@@ -40,6 +40,20 @@ to release construction, not to normal Native Host execution.
 The Home Assistant custom integration is maintained in the separate
 [`taipower-ami-ha`](https://github.com/ctes-08/taipower-ami-ha) repository.
 HACS installs only that integration; it cannot install this Windows Companion.
+
+## Code signing policy and privacy
+
+The exact credential flow, fixed Taipower validation request, local or
+operator-selected SMB destination, retention behavior, and uninstall boundary
+are documented in [PRIVACY.md](PRIVACY.md).
+
+The [Code signing policy](CODE_SIGNING_POLICY.md) records that the first public
+release is expected to be unsigned. The project may apply to
+the SignPath Foundation open-source program only after publication and real
+release validation. The future eligibility, trusted-build requirements, roles,
+and manual approval boundary are defined in
+[CODE_SIGNING_POLICY.md](CODE_SIGNING_POLICY.md). No current artifact may claim
+SignPath approval or a SignPath Foundation signature.
 
 ## Operator configuration
 
@@ -79,6 +93,8 @@ The first release remains blocked until all of the following pass:
 - the archive is produced by the required 64-bit Windows PowerShell 5.1 host;
 - two clean builds from different staging paths produce the same EXE hash;
 - installer, uninstaller, extension protocol, and secret-redaction tests pass;
+- privacy, code-signing, installation, and uninstall disclosures match the
+  implemented data flow;
 - the exact unsigned archive and sidecar hash are reproducible; and
 - a fresh Windows VM completes install, Chrome Native Messaging, uninstall,
   and reinstall tests.
@@ -87,8 +103,11 @@ The private GitHub staging repository also runs the complete source gate in a
 clean hosted Windows checkout. That workflow downloads only pinned compiler
 inputs, verifies their SHA-256 values and the Microsoft Authenticode identity
 of the Visual Studio bootstrapper, then lets this repository's stricter
-per-file toolchain lock fail closed. CI does not upload a release artifact and
-does not replace the disposable-VM Chrome/Native Messaging matrix.
+per-file toolchain lock fail closed. Pull-request and ordinary push CI never
+upload a release artifact. A maintainer may explicitly dispatch the default
+branch workflow with a validated version to retain an unsigned candidate ZIP
+and sidecar after the same gate passes. That candidate does not replace the
+disposable-VM Chrome/Native Messaging matrix and is not a GitHub Release.
 
 Before changing repository visibility, enable private vulnerability reporting,
 run the workflow once, require its `windows-powershell-5.1` job in the default

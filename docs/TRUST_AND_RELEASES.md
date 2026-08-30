@@ -11,6 +11,15 @@ Public CI has no access to the private YubiKey, signer certificate, signer
 thumbprint, WDAC policy, production computer, household paths, or Home
 Assistant credentials.
 
+The first public release is unsigned. If the project is later accepted by the
+SignPath Foundation open-source program, only the project-owned Native Host and
+installer files enumerated in the
+[Code signing policy](../CODE_SIGNING_POLICY.md) may be signed. The unsigned
+GitHub Actions artifact remains the source-linked input; signing and
+timestamping change its bytes, after which a separate public post-sign step must
+regenerate metadata, checksums, ZIP, and sidecar. The resulting Publisher is
+SignPath Foundation, not the private release identity.
+
 ## Private production channel
 
 The private security workflow consumes one exact reviewed unsigned candidate,

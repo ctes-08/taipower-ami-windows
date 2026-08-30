@@ -160,9 +160,25 @@ try {
     Assert-True ($buildText -match [regex]::Escape('docs\RELEASE_README.md') -and
         $buildText -match [regex]::Escape('docs\INSTALLATION.md') -and
         $buildText -match [regex]::Escape('SECURITY.md') -and
+        $buildText -match [regex]::Escape('PRIVACY.md') -and
+        $buildText -match [regex]::Escape('CODE_SIGNING_POLICY.md') -and
         $buildText -match "Source = 'LICENSE'" -and
         $buildText -match "Destination = 'LICENSE'") `
-        'release builder packages the reviewed offline documents and license'
+        'release builder packages the reviewed offline policies, guidance, and license'
+    $privacyText = Get-Content -LiteralPath (Join-Path $repoRoot 'PRIVACY.md') -Raw -Encoding UTF8
+    $codeSigningPolicyText = Get-Content `
+        -LiteralPath (Join-Path $repoRoot 'CODE_SIGNING_POLICY.md') `
+        -Raw -Encoding UTF8
+    Assert-True ($privacyText -match 'no project-operated server' -and
+        $privacyText -match 'does not read, store, or fill the Taipower account name or password' -and
+        $privacyText -match 'uninstaller deliberately does not delete') `
+        'privacy policy discloses collection, destinations, and retained credential file'
+    Assert-True ($codeSigningPolicyText -match [regex]::Escape(
+        'Free code signing provided by SignPath.io, certificate by SignPath Foundation'
+    ) -and
+        $codeSigningPolicyText -match 'first public release is expected to be unsigned' -and
+        $codeSigningPolicyText -match 'manual approval') `
+        'code-signing policy states pending status, required attribution, and approval boundary'
     $licenseText = Get-Content -LiteralPath (Join-Path $repoRoot 'LICENSE') -Raw -Encoding UTF8
     Assert-True ($licenseText -match '(?m)^\s*Apache License\s*$' -and
         $licenseText -match '(?m)^\s*Version 2\.0, January 2004\s*$') `
@@ -213,8 +229,24 @@ try {
     Assert-True ($workflowUses.Count -ge 1 -and
         @($workflowUses | Where-Object { $_ -cnotmatch '^[0-9a-f]{40}$' }).Count -eq 0) `
         'CI workflow pins every external action to a full commit hash'
-    Assert-True ($workflowText -notmatch 'actions/upload-artifact') `
-        'pull-request CI never uploads release artifacts'
+    Assert-True ($workflowText -match '(?s)workflow_dispatch:\s+inputs:\s+release_version:' -and
+        $workflowText -match "release_version is not a supported release version") `
+        'manual candidate workflow requires and validates an explicit release version'
+    Assert-True ([regex]::Matches(
+        $workflowText,
+        "github.event_name == 'workflow_dispatch' &&"
+    ).Count -eq 2 -and
+        [regex]::Matches(
+            $workflowText,
+            "github.ref == 'refs/heads/main' &&"
+        ).Count -eq 2) `
+        'candidate build and upload are both restricted to manual default-branch runs'
+    Assert-True ([regex]::Matches($workflowText, 'actions/upload-artifact@').Count -eq 1 -and
+        $workflowText -match 'if-no-files-found:\s*error' -and
+        $workflowText -match 'retention-days:\s*14') `
+        'manual candidate uses one pinned fail-closed short-retention artifact upload'
+    Assert-True ($workflowText -notmatch '(?i)signpath|SIGNPATH_API_TOKEN') `
+        'unsigned candidate workflow has no signing request or SignPath secret'
     $hostGateIndex = $buildText.IndexOf('$isSupportedBuildHost', [StringComparison]::Ordinal)
     $firstImportIndex = $buildText.IndexOf('Import-Module', [StringComparison]::Ordinal)
     Assert-True ($hostGateIndex -ge 0 -and $firstImportIndex -gt $hostGateIndex) `

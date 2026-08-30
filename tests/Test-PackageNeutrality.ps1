@@ -12,7 +12,7 @@ Import-Module (Join-Path $repoRoot 'PublicCommon.psm1') -Force
 $testRoot = Join-Path $repoRoot ('.test-output\package-neutrality-' + [Guid]::NewGuid().ToString('N'))
 $releaseOutput = Join-Path $testRoot 'release'
 $script:Passed = 0
-$reviewedCompatibilitySha256 = '329A81522783A07B08AA2D32292A5623B795C71EC7FC73933AD3FFA2507AEB30'
+$reviewedCompatibilitySha256 = '950B2E59E212B448098CF2FFC395562617BCC95074A62F05B94E8AE3A88FDD9C'
 
 function Assert-True {
     param([bool]$Condition, [string]$Message)
@@ -34,11 +34,22 @@ try {
         -LiteralPath (Join-Path $release.Package 'ChromeExtension\manifest.json') `
         -Raw -Encoding UTF8 | ConvertFrom-Json
     $nativeExe = Join-Path $release.Package 'NativeHost\TaipowerAMINativeHostV2.exe'
+    $versionInfo = (Get-Item -LiteralPath $nativeExe).VersionInfo
 
     Assert-True ([string]$metadata.version -ceq '2.0.1') 'release metadata carries version 2.0.1'
     Assert-True ([string]$manifest.version -ceq '2.0.1') 'extension manifest carries version 2.0.1'
     Assert-True ((Get-Item -LiteralPath $nativeExe).VersionInfo.FileVersion -like '2.0.1.*') `
         'Native Host file version carries version 2.0.1'
+    Assert-True ([string]$versionInfo.ProductName -ceq 'Taipower AMI Windows Companion') `
+        'Native Host product name matches the public project'
+    Assert-True ([string]$versionInfo.FileDescription -ceq 'Taipower AMI Native Host') `
+        'Native Host file description identifies its role'
+    Assert-True ([string]$versionInfo.CompanyName -ceq 'Taipower AMI contributors') `
+        'Native Host company metadata uses the neutral contributor identity'
+    Assert-True ([string]$versionInfo.OriginalFilename -ceq 'TaipowerAMINativeHostV2.exe') `
+        'Native Host original filename matches the compatibility contract'
+    Assert-True ([string]$versionInfo.ProductVersion -like '2.0.1*') `
+        'Native Host product version matches the reviewed release'
     Assert-True ([string]$release.NativeHostSha256 -ceq $reviewedCompatibilitySha256) `
         '2.0.1 Native Host matches the reviewed cross-channel unsigned binary'
     $validatedPackage = Test-TaipowerAMIUnsignedPackage -PackageRoot $release.Package
@@ -57,6 +68,14 @@ try {
         [pscustomobject]@{
             Source = 'SECURITY.md'
             Packaged = 'SECURITY.md'
+        },
+        [pscustomobject]@{
+            Source = 'PRIVACY.md'
+            Packaged = 'PRIVACY.md'
+        },
+        [pscustomobject]@{
+            Source = 'CODE_SIGNING_POLICY.md'
+            Packaged = 'CODE_SIGNING_POLICY.md'
         },
         [pscustomobject]@{
             Source = 'LICENSE'

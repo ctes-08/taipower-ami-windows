@@ -12,9 +12,11 @@ The supported workflow is user-authorized and read-only. It does not bypass
 human verification, automate login, expose a general Home Assistant token,
 or run the Native Messaging host with administrator privileges.
 
-Public artifacts are unsigned and must be identified as such. The private
-YubiKey/WDAC signer belongs to a separate private release channel and is never
-invoked by this repository.
+Current public artifacts are unsigned and must be identified as such. A future
+public SignPath Foundation signature is permitted only after approval and only
+under [CODE_SIGNING_POLICY.md](CODE_SIGNING_POLICY.md). The private YubiKey/WDAC
+signer belongs to a separate private release channel and is never invoked by
+this repository.
 
 The public LocalAppData installation and its HKCU configuration are writable
 by the current user. Runtime registry rereads, reparse rejection, and final

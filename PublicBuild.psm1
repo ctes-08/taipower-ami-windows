@@ -74,6 +74,11 @@ function Invoke-TaipowerAMIDeterministicCompile {
     while (($fourPartVersion -split '\.').Count -lt 4) { $fourPartVersion += '.0' }
     $assemblyText = @(
         'using System.Reflection;',
+        '[assembly: AssemblyTitle("Taipower AMI Native Host")]',
+        '[assembly: AssemblyDescription("Native Messaging host for the Taipower AMI Windows Companion")]',
+        '[assembly: AssemblyCompany("Taipower AMI contributors")]',
+        '[assembly: AssemblyProduct("Taipower AMI Windows Companion")]',
+        '[assembly: AssemblyCopyright("Copyright 2026 ctes-08 and contributors")]',
         ('[assembly: AssemblyVersion("' + $fourPartVersion + '")]'),
         ('[assembly: AssemblyFileVersion("' + $fourPartVersion + '")]'),
         ('[assembly: AssemblyInformationalVersion("' + $Version + '")]'),

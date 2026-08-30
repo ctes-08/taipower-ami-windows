@@ -1,0 +1,72 @@
+name: Bug report
+description: Report a reproducible Windows Companion problem without sharing credentials.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Stop before attaching files.** Never upload a HAR, browser profile, cookies,
+        `credentials.json`, SESSION, enkey, account or electric number, Home Assistant
+        token, private/LAN/UNC path, signing material, or an original URL containing a
+        query string. Describe the failure using sanitized values only.
+  - type: input
+    id: companion_version
+    attributes:
+      label: Windows Companion version
+      placeholder: 2.0.1
+    validations:
+      required: true
+  - type: input
+    id: windows_chrome
+    attributes:
+      label: Windows and Chrome versions
+      placeholder: Windows 11 24H2; Chrome 151
+    validations:
+      required: true
+  - type: dropdown
+    id: install_stage
+    attributes:
+      label: Failure stage
+      options:
+        - Build or package verification
+        - User-scoped installation
+        - Chrome extension loading
+        - Native Messaging handoff
+        - Uninstallation or reinstall
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: What happened?
+      description: Include the sanitized visible error and when it occurred.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Use generic paths and identifiers; do not paste commands containing secrets.
+      placeholder: |
+        1. Verify the unsigned ZIP and extract it.
+        2. Run the installer with a generic test destination.
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: sanitized_evidence
+    attributes:
+      label: Sanitized evidence
+      description: Optional. Provide only an exception type or short manually reviewed excerpt. Do not attach raw logs.
+      render: shell
+  - type: checkboxes
+    id: privacy_confirmation
+    attributes:
+      label: Privacy confirmation
+      options:
+        - label: I manually checked this report and it contains none of the prohibited credentials, captures, private paths, identifiers, or signing material listed above.
+          required: true
+

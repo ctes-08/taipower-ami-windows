@@ -128,7 +128,8 @@ try {
         'tests\Test-TransactionStructure.ps1',
         'tests\Test-SourceProvenance.ps1',
         'tests\Test-BuildHostGate.ps1',
-        'tests\Test-PackageNeutrality.ps1'
+        'tests\Test-PackageNeutrality.ps1',
+        'tests\Prepare-CiToolchain.ps1'
     )) {
         $path = Join-Path $repoRoot $scriptName
         $tokens = $null
@@ -140,6 +141,12 @@ try {
     $installText = Get-Content -LiteralPath (Join-Path $repoRoot 'Install-UserScoped.ps1') -Raw -Encoding UTF8
     $uninstallText = Get-Content -LiteralPath (Join-Path $repoRoot 'Uninstall-UserScoped.ps1') -Raw -Encoding UTF8
     $buildText = Get-Content -LiteralPath (Join-Path $repoRoot 'Build-UnsignedRelease.ps1') -Raw -Encoding UTF8
+    $ciBootstrapText = Get-Content `
+        -LiteralPath (Join-Path $repoRoot 'tests\Prepare-CiToolchain.ps1') `
+        -Raw -Encoding UTF8
+    $workflowText = Get-Content `
+        -LiteralPath (Join-Path $repoRoot '.github\workflows\validate.yml') `
+        -Raw -Encoding UTF8
     Assert-True ($buildText -match '\$PSVersionTable\.PSEdition\s+-ceq\s+''Desktop''') `
         'release builder requires Windows PowerShell Desktop edition'
     Assert-True ($buildText -match '\$PSVersionTable\.PSVersion\.Major\s+-eq\s+5' -and
@@ -147,6 +154,21 @@ try {
         'release builder requires PowerShell version 5.1 exactly'
     Assert-True ($buildText -match '\[Environment\]::Is64BitProcess') `
         'release builder requires a 64-bit process'
+    Assert-True ($ciBootstrapText -notmatch '(?im)^\s*Remove-Item[^\r\n]*-Recurse\b') `
+        'CI toolchain bootstrap never recursively deletes a caller-selected path'
+    Assert-True ($ciBootstrapText -match 'Get-AuthenticodeSignature' -and
+        $ciBootstrapText -match 'O=Microsoft Corporation') `
+        'CI bootstrap verifies the pinned Visual Studio Microsoft signature'
+    Assert-True ($ciBootstrapText -match '0DF3A4470B1A8568DEC1C012F9DEFC72D7185F40EAA26ABEADF023C1D30275FB' -and
+        $ciBootstrapText -match 'FFA0A5570A39F911399164D0581FFDDEF99B5E3DFBAA5F220E5CE22969BCF57C') `
+        'CI bootstrap pins both downloaded inputs by SHA-256'
+    $workflowUses = @([regex]::Matches($workflowText, '(?m)^\s*uses:\s*[^@\s]+@([^\s#]+)') |
+        ForEach-Object { $_.Groups[1].Value })
+    Assert-True ($workflowUses.Count -ge 1 -and
+        @($workflowUses | Where-Object { $_ -cnotmatch '^[0-9a-f]{40}$' }).Count -eq 0) `
+        'CI workflow pins every external action to a full commit hash'
+    Assert-True ($workflowText -notmatch 'actions/upload-artifact') `
+        'pull-request CI never uploads release artifacts'
     $hostGateIndex = $buildText.IndexOf('$isSupportedBuildHost', [StringComparison]::Ordinal)
     $firstImportIndex = $buildText.IndexOf('Import-Module', [StringComparison]::Ordinal)
     Assert-True ($hostGateIndex -ge 0 -and $firstImportIndex -gt $hostGateIndex) `

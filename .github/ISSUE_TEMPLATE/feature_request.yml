@@ -1,0 +1,39 @@
+name: Feature request
+description: Suggest a narrowly scoped improvement to the public Windows Companion.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This project does not automate passwords, CAPTCHA/Turnstile, unattended login,
+        privilege elevation, or private signing. Do not include credentials, browser
+        captures, household paths, or account identifiers in a proposal.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: security_boundary
+    attributes:
+      label: Security and privacy impact
+      description: Explain new data, permissions, network calls, or installation changes.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy_confirmation
+    attributes:
+      label: Privacy confirmation
+      options:
+        - label: I did not include credentials, captured sessions, private paths, personal identifiers, or signing material.
+          required: true
+

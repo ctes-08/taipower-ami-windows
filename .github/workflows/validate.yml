@@ -1,0 +1,247 @@
+name: Public Windows gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-windows-gate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: powershell
+
+jobs:
+  complete-gate:
+    name: windows-powershell-5.1
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      TAIPOWER_TOOLCHAIN_ROOT: C:\VS\TaipowerAMI-18.5.0
+
+    steps:
+      - name: Configure LF checkout policy
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Check out exact source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          show-progress: false
+
+      - name: Verify supported host and source checkout
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+          if ($PSVersionTable.PSEdition -cne 'Desktop' -or
+              $PSVersionTable.PSVersion.Major -ne 5 -or
+              $PSVersionTable.PSVersion.Minor -ne 1 -or
+              -not [Environment]::Is64BitProcess) {
+            throw 'Gate requires 64-bit Windows PowerShell 5.1 Desktop.'
+          }
+          Get-Command git.exe -ErrorAction Stop | Out-Null
+          Get-Command node.exe -ErrorAction Stop | Out-Null
+          Get-Command pwsh.exe -ErrorAction Stop | Out-Null
+          Write-Host ('Windows PowerShell: ' + $PSVersionTable.PSVersion)
+          Write-Host ('Node: ' + (& node.exe --version))
+          Write-Host ('PowerShell 7 negative probe: ' + (& pwsh.exe --version))
+
+          $trackedSymlinks = @(git ls-files -s | Where-Object { $_ -match '^120000 ' })
+          if ($LASTEXITCODE -ne 0) { throw 'git ls-files failed.' }
+          if ($trackedSymlinks.Count -ne 0) {
+            throw ('Tracked symbolic links are forbidden:' + "`n" + ($trackedSymlinks -join "`n"))
+          }
+
+          $textFiles = @(git ls-files | Where-Object {
+            $_ -match '\.(?:ps1|psm1|cs|js|json|yml|yaml|md|html|css)$' -or
+            $_ -in @('.gitattributes', '.gitignore')
+          })
+          if ($LASTEXITCODE -ne 0 -or $textFiles.Count -eq 0) {
+            throw 'Unable to enumerate tracked text files.'
+          }
+          foreach ($relative in $textFiles) {
+            $attributes = @(git check-attr text eol -- $relative)
+            if ($LASTEXITCODE -ne 0) { throw ('git check-attr failed for ' + $relative) }
+            $attributeText = $attributes -join "`n"
+            if ($attributeText -notmatch '(?m): text: set$' -or
+                $attributeText -notmatch '(?m): eol: lf$') {
+              throw ('Tracked source is not pinned to text/eol=lf: ' + $relative)
+            }
+            $path = Join-Path $env:GITHUB_WORKSPACE ($relative -replace '/', '\')
+            $bytes = [IO.File]::ReadAllBytes($path)
+            if ($bytes -contains [byte]0x0D) {
+              throw ('Tracked source contains a CR byte: ' + $relative)
+            }
+            if ($relative -match '\.(?:ps1|psm1)$' -and
+                @($bytes | Where-Object { $_ -gt 0x7F }).Count -ne 0) {
+              throw ('Windows PowerShell 5.1 source must remain ASCII and BOM-free: ' + $relative)
+            }
+          }
+          git ls-files --eol
+          if ($LASTEXITCODE -ne 0) { throw 'git ls-files --eol failed.' }
+
+          $dirty = @(git status --porcelain=v1 --untracked-files=all)
+          if ($LASTEXITCODE -ne 0 -or $dirty.Count -ne 0) {
+            throw ('Checkout is not clean:' + "`n" + ($dirty -join "`n"))
+          }
+
+      - name: Prepare and validate pinned compiler toolchain
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+          $workRoot = Join-Path $env:RUNNER_TEMP 'taipower-ami-toolchain'
+          $programFilesX86 = Join-Path $workRoot 'program-files-x86'
+          $preparedRecords = @(& .\tests\Prepare-CiToolchain.ps1 `
+            -InstallRoot $env:TAIPOWER_TOOLCHAIN_ROOT `
+            -WorkRoot $workRoot)
+          if ($preparedRecords.Count -ne 1) {
+            throw 'CI toolchain bootstrap returned unexpected output.'
+          }
+          $prepared = $preparedRecords[0]
+          if ($prepared.ToolchainRoot -ne $env:TAIPOWER_TOOLCHAIN_ROOT -or
+              $prepared.ProgramFilesX86 -ne $programFilesX86 -or
+              $prepared.ToolchainId -cne 'vs18.5.4-roslyn5.5.0-netfx472-x64' -or
+              $prepared.LockSha256 -cnotmatch '^[0-9A-F]{64}$') {
+            throw 'CI toolchain bootstrap returned an unexpected identity or path.'
+          }
+          $utf8NoBom = New-Object Text.UTF8Encoding($false)
+          [IO.File]::AppendAllText(
+            $env:GITHUB_ENV,
+            "TAIPOWER_CI_WORK_ROOT=$workRoot`n" +
+              "TAIPOWER_PROGRAM_FILES_X86=$programFilesX86`n",
+            $utf8NoBom
+          )
+          Write-Host ('Pinned toolchain: ' + $prepared.ToolchainId)
+          Write-Host ('Toolchain lock SHA-256: ' + $prepared.LockSha256)
+
+      - name: Run complete public gate
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          function Write-TestRecords {
+            param([Parameter(Mandatory = $true)][object[]]$Records)
+            foreach ($record in $Records) { Write-Host ([string]$record) }
+          }
+
+          function Invoke-NoSkipPowerShellTest {
+            param(
+              [Parameter(Mandatory = $true)][string]$LiteralPath,
+              [Parameter(Mandatory = $true)][string]$SuccessPattern,
+              [hashtable]$Parameters = @{}
+            )
+            $records = @(& $LiteralPath @Parameters *>&1)
+            Write-TestRecords -Records $records
+            $text = $records -join "`n"
+            if ($text -match '(?i)\bskip(?:ped)?\b') {
+              throw ('Unexpected skipped assertion in ' + $LiteralPath)
+            }
+            if ([regex]::Matches($text, $SuccessPattern).Count -ne 1) {
+              throw ('Expected exactly one success summary from ' + $LiteralPath)
+            }
+          }
+
+          function Invoke-NodeTest {
+            param(
+              [Parameter(Mandatory = $true)][string]$LiteralPath,
+              [Parameter(Mandatory = $true)][string]$ExpectedSummary
+            )
+            $records = @(& node.exe $LiteralPath 2>&1)
+            $exitCode = $LASTEXITCODE
+            Write-TestRecords -Records $records
+            if ($exitCode -ne 0 -or
+                [regex]::Matches(($records -join "`n"), $ExpectedSummary).Count -ne 1) {
+              throw ('Node test did not return its exact success summary: ' + $LiteralPath)
+            }
+          }
+
+          Invoke-NoSkipPowerShellTest `
+            -LiteralPath .\tests\Test-PublicSafety.ps1 `
+            -SuccessPattern '(?m)^Public safety tests passed: [1-9][0-9]*\s*$'
+          Invoke-NodeTest `
+            -LiteralPath .\tests\test_extension.js `
+            -ExpectedSummary '(?m)^Chrome extension contract tests passed: 10\s*$'
+          Invoke-NodeTest `
+            -LiteralPath .\tests\test_transaction_order.js `
+            -ExpectedSummary '(?m)^Transaction order and mutex tests passed: 5\s*$'
+
+          Remove-Item Env:TAIPOWER_AMI_TEST_UNC_PARENT -ErrorAction SilentlyContinue
+          $destinationRecords = @(& .\tests\Test-NativeHostDestination.ps1 `
+            -ToolchainRoot $env:TAIPOWER_TOOLCHAIN_ROOT `
+            -ProgramFilesX86 $env:TAIPOWER_PROGRAM_FILES_X86 *>&1)
+          Write-TestRecords -Records $destinationRecords
+          $destinationText = $destinationRecords -join "`n"
+          $destinationSummary = [regex]::Matches(
+            $destinationText,
+            '(?m)^PASS_COUNT=([0-9]+);SKIP_COUNT=([0-9]+)\s*$'
+          )
+          if ($destinationSummary.Count -ne 1 -or
+              [int]$destinationSummary[0].Groups[1].Value -le 0 -or
+              [int]$destinationSummary[0].Groups[2].Value -ne 1) {
+            throw 'Native Host destination gate did not report exactly one expected live-UNC skip.'
+          }
+
+          Invoke-NoSkipPowerShellTest `
+            -LiteralPath .\tests\Test-RegistryCas.ps1 `
+            -SuccessPattern '(?m)^Registry guarded-update tests passed: [1-9][0-9]*\s*$'
+          Invoke-NoSkipPowerShellTest `
+            -LiteralPath .\tests\Test-TransactionStructure.ps1 `
+            -SuccessPattern '(?m)^Transaction structure tests passed: [1-9][0-9]*\s*$'
+          Invoke-NoSkipPowerShellTest `
+            -LiteralPath .\tests\Test-SourceProvenance.ps1 `
+            -SuccessPattern '(?m)^Source provenance tests passed: [1-9][0-9]*\s*$'
+
+          $hostRecords = @(& .\tests\Test-BuildHostGate.ps1 *>&1)
+          Write-TestRecords -Records $hostRecords
+          $hostText = $hostRecords -join "`n"
+          $hostSummary = [regex]::Matches(
+            $hostText,
+            '(?m)^Build host gate tests passed:\s*([0-9]+);\s*skipped:\s*([0-9]+)\s*$'
+          )
+          if ($hostSummary.Count -ne 1 -or
+              [int]$hostSummary[0].Groups[1].Value -le 0 -or
+              [int]$hostSummary[0].Groups[2].Value -ne 0) {
+            throw 'PowerShell 7 rejection probe did not run without skips.'
+          }
+
+          Invoke-NoSkipPowerShellTest `
+            -LiteralPath .\tests\Test-PackageNeutrality.ps1 `
+            -SuccessPattern '(?m)^Package neutrality tests passed: [1-9][0-9]*\s*$' `
+            -Parameters @{
+              ToolchainRoot = $env:TAIPOWER_TOOLCHAIN_ROOT
+              ProgramFilesX86 = $env:TAIPOWER_PROGRAM_FILES_X86
+            }
+          Invoke-NoSkipPowerShellTest `
+            -LiteralPath .\tests\Test-DeterministicBuild.ps1 `
+            -SuccessPattern '(?m)^Deterministic unsigned release tests passed: 3\s*$' `
+            -Parameters @{
+              ToolchainRoot = $env:TAIPOWER_TOOLCHAIN_ROOT
+              ProgramFilesX86 = $env:TAIPOWER_PROGRAM_FILES_X86
+            }
+
+          foreach ($relativeRoot in @('.build', '.test-output', '.audit-output', 'artifacts')) {
+            $path = Join-Path $env:GITHUB_WORKSPACE $relativeRoot
+            if (Test-Path -LiteralPath $path -PathType Container) {
+              $leftovers = @(Get-ChildItem -LiteralPath $path -Force)
+              if ($leftovers.Count -ne 0) {
+                throw ('Gate left ignored output behind in ' + $relativeRoot)
+              }
+            }
+          }
+
+          $dirty = @(git status --porcelain=v1 --untracked-files=all)
+          if ($LASTEXITCODE -ne 0 -or $dirty.Count -ne 0) {
+            throw ('Gate changed the source tree:' + "`n" + ($dirty -join "`n"))
+          }

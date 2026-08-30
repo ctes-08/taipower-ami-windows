@@ -74,6 +74,24 @@ parents, and a junction rejection. To add a live UNC handle-identity check,
 set `TAIPOWER_AMI_TEST_UNC_PARENT` to an existing reviewed share directory;
 otherwise that one network-dependent case is reported as skipped.
 
+## Hosted CI boundary
+
+`.github/workflows/validate.yml` runs the complete gate with 64-bit Windows
+PowerShell 5.1. It does not trust the changing compiler preinstalled on
+`windows-latest`. `tests/Prepare-CiToolchain.ps1` instead downloads a fixed
+Visual Studio Build Tools bootstrapper and the fixed .NET Framework 4.7.2
+reference-assembly package, verifies both SHA-256 values, verifies the
+bootstrapper's Microsoft Authenticode signer, installs into an isolated path,
+and finally invokes `PublicToolchain.psm1` to check every locked compiler and
+reference file. Any edition, servicing, size, or hash difference fails the
+job; there is no fallback to another compiler.
+
+The workflow requires exactly one documented destination-test skip because a
+public runner has no reviewed live UNC share. It also requires the PowerShell 7
+negative-host probe to execute with no skip. CI deliberately uploads no ZIP or
+EXE: release artifacts are created only from a reviewed clean commit after the
+separate Windows VM matrix is complete.
+
 The source checkout may be dirty during development, but publication requires
 `source_tree_state: clean`, an immutable source commit, identical results from
 a second clean checkout, and the complete Hyper-V matrix. The private signer

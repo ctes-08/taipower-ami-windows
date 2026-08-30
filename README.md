@@ -78,6 +78,19 @@ The first release remains blocked until all of the following pass:
 - a fresh Windows VM completes install, Chrome Native Messaging, uninstall,
   and reinstall tests.
 
+The private GitHub staging repository also runs the complete source gate in a
+clean hosted Windows checkout. That workflow downloads only pinned compiler
+inputs, verifies their SHA-256 values and the Microsoft Authenticode identity
+of the Visual Studio bootstrapper, then lets this repository's stricter
+per-file toolchain lock fail closed. CI does not upload a release artifact and
+does not replace the disposable-VM Chrome/Native Messaging matrix.
+
+Before changing repository visibility, enable private vulnerability reporting,
+run the workflow once, require its `windows-powershell-5.1` job in the default
+branch ruleset (shown under `Public Windows gate` in the Actions UI), review the
+issue privacy warning, and repeat the full-history secret scan from a fresh
+clone.
+
 No open-source license has been selected yet. Private validation does not grant
 redistribution rights; a deliberate license decision is required before the
 repository becomes public.

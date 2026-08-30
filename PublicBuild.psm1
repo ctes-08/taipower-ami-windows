@@ -60,10 +60,12 @@ function Invoke-TaipowerAMIDeterministicCompile {
     [IO.Directory]::CreateDirectory($outputParent) | Out-Null
 
     $sourceDirectory = [IO.Path]::GetDirectoryName($source)
-    if ($sourceDirectory.Contains(',') -or $sourceDirectory.Contains('=')) {
-        throw 'Deterministic source staging path must not contain commas or equals signs.'
+    foreach ($pathMapInput in @($sourceDirectory, $outputParent)) {
+        if ($pathMapInput.Contains(',') -or $pathMapInput.Contains('=')) {
+            throw 'Deterministic staging paths must not contain commas or equals signs.'
+        }
     }
-    $assemblyInfo = Join-Path $sourceDirectory 'DeterministicAssemblyInfo.cs'
+    $assemblyInfo = Join-Path $outputParent '.TaipowerAMI.AssemblyInfo.cs'
     if (Test-Path -LiteralPath $assemblyInfo) {
         throw 'Deterministic assembly metadata staging file already exists.'
     }
@@ -78,22 +80,25 @@ function Invoke-TaipowerAMIDeterministicCompile {
         ('[assembly: AssemblyMetadata("TaipowerAMI.ToolchainId", "' + $Toolchain.Id + '")]'),
         ('[assembly: AssemblyMetadata("TaipowerAMI.ToolchainLockSha256", "' + $Toolchain.LockSha256 + '")]'),
         '[assembly: AssemblyMetadata("TaipowerAMI.Deterministic", "true")]'
-    ) -join "`n"
-    Write-TaipowerAMIUtf8NoBom -LiteralPath $assemblyInfo -Content ($assemblyText + "`n")
+    ) -join [Environment]::NewLine
+    Write-TaipowerAMIUtf8NoBom `
+        -LiteralPath $assemblyInfo `
+        -Content ($assemblyText + [Environment]::NewLine)
     try {
-        $virtualSource = 'X:\taipower-ami-windows\src\NativeHostLauncher.cs'
+        $virtualSource = '/_/src/NativeHostLauncher.cs'
         $arguments = @(
-            '/nologo', '/noconfig', '/nostdlib+', '/target:exe', '/platform:anycpu',
-            '/optimize+', '/debug-', '/deterministic+', '/utf8output',
-            '/langversion:7.3', '/warn:4', '/warnaserror+', '/main:NativeHostLauncher',
-            ('/pathmap:' + $sourceDirectory + '=X:\taipower-ami-windows\src'),
+            '/nologo', '/noconfig', '/nostdlib+', '/deterministic+', '/optimize+',
+            '/debug-', '/target:exe', '/platform:anycpu',
+            '/langversion:7.3', '/warn:4', '/warnaserror+', '/utf8output',
+            '/main:NativeHostLauncher',
+            ('/pathmap:' + $outputParent + '=/_/obj,' + $sourceDirectory + '=/_/src'),
             ('/out:' + $output),
+            $source,
+            $assemblyInfo,
             ('/reference:' + $Toolchain.Files.netfx_mscorlib),
             ('/reference:' + $Toolchain.Files.netfx_system),
             ('/reference:' + $Toolchain.Files.netfx_system_core),
-            ('/reference:' + $Toolchain.Files.netfx_system_web_extensions),
-            $source,
-            $assemblyInfo
+            ('/reference:' + $Toolchain.Files.netfx_system_web_extensions)
         )
         $outputText = & $Toolchain.Files.roslyn_csc @arguments 2>&1
         if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $output -PathType Leaf)) {

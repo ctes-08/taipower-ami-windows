@@ -65,7 +65,12 @@ negative probe as skipped when PowerShell 7 is not installed.
 both its text and executable byte representations for private identity,
 environment, signing, and credential material. It also verifies that release
 metadata, the extension manifest, and the Native Host file version all carry
-2.0.1.
+2.0.1. The 2.0.1 gate additionally pins the reviewed private/public
+cross-channel unsigned Native Host SHA-256 so that packaging-only differences
+cannot silently change the shared executable. The pinned value is the 2.0.1
+pre-signing executable, not the separate 2.0.0 rollback-lab fixture. A source
+or version change requires a new reviewed compatibility hash rather than
+weakening this assertion.
 
 `Test-NativeHostDestination.ps1` exercises the compiled Host in a short-lived
 Windows PowerShell child process. It covers local volume roots, native UNC

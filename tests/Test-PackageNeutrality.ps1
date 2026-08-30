@@ -11,6 +11,7 @@ $repoRoot = [IO.Path]::GetDirectoryName($PSScriptRoot)
 $testRoot = Join-Path $repoRoot ('.test-output\package-neutrality-' + [Guid]::NewGuid().ToString('N'))
 $releaseOutput = Join-Path $testRoot 'release'
 $script:Passed = 0
+$reviewedCompatibilitySha256 = '329A81522783A07B08AA2D32292A5623B795C71EC7FC73933AD3FFA2507AEB30'
 
 function Assert-True {
     param([bool]$Condition, [string]$Message)
@@ -37,6 +38,8 @@ try {
     Assert-True ([string]$manifest.version -ceq '2.0.1') 'extension manifest carries version 2.0.1'
     Assert-True ((Get-Item -LiteralPath $nativeExe).VersionInfo.FileVersion -like '2.0.1.*') `
         'Native Host file version carries version 2.0.1'
+    Assert-True ([string]$release.NativeHostSha256 -ceq $reviewedCompatibilitySha256) `
+        '2.0.1 Native Host matches the reviewed cross-channel unsigned binary'
 
     $representations = [Collections.Generic.List[string]]::new()
     foreach ($file in Get-ChildItem -LiteralPath $release.Package -File -Recurse) {
@@ -74,4 +77,5 @@ try {
     }
 }
 
+Write-Host ('Native Host compatibility SHA-256: ' + $reviewedCompatibilitySha256)
 Write-Host ("Package neutrality tests passed: {0}" -f $script:Passed)

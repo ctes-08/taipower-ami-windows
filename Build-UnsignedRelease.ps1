@@ -128,7 +128,7 @@ try {
         reproducibility = [ordered]@{
             clean_staging_builds = 2
             identical_executable_bytes = $true
-            path_mapping = 'X:\taipower-ami-windows\src'
+            path_mapping = '/_/obj,/_/src'
         }
     }
     Write-TaipowerAMIUtf8NoBom `

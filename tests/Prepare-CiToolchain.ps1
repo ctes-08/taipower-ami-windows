@@ -82,9 +82,10 @@ $repoRoot = [IO.Path]::GetDirectoryName($PSScriptRoot)
 $installPath = Resolve-CiLocalAbsolutePath -Path $InstallRoot -Name 'InstallRoot'
 $runnerTemp = Resolve-CiLocalAbsolutePath -Path $env:RUNNER_TEMP -Name 'RUNNER_TEMP'
 $workPath = Resolve-CiLocalAbsolutePath -Path $WorkRoot -Name 'WorkRoot'
-$runnerPrefix = $runnerTemp + '\\'
+$separator = [IO.Path]::DirectorySeparatorChar
+$runnerPrefix = $runnerTemp + $separator
 if ($workPath.Equals($runnerTemp, [StringComparison]::OrdinalIgnoreCase) -or
-    -not (($workPath + '\\').StartsWith($runnerPrefix, [StringComparison]::OrdinalIgnoreCase))) {
+    -not (($workPath + $separator).StartsWith($runnerPrefix, [StringComparison]::OrdinalIgnoreCase))) {
     throw 'WorkRoot must be a strict descendant of RUNNER_TEMP.'
 }
 

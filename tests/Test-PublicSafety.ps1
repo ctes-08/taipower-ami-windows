@@ -156,6 +156,9 @@ try {
         'release builder requires a 64-bit process'
     Assert-True ($ciBootstrapText -notmatch '(?im)^\s*Remove-Item[^\r\n]*-Recurse\b') `
         'CI toolchain bootstrap never recursively deletes a caller-selected path'
+    Assert-True ($ciBootstrapText -match '\[IO\.Path\]::DirectorySeparatorChar' -and
+        $ciBootstrapText -match '\$workPath\s*\+\s*\$separator') `
+        'CI WorkRoot descendant check uses the platform directory separator explicitly'
     Assert-True ($ciBootstrapText -match 'Get-AuthenticodeSignature' -and
         $ciBootstrapText -match 'O=Microsoft Corporation') `
         'CI bootstrap verifies the pinned Visual Studio Microsoft signature'

@@ -38,8 +38,8 @@ The builder:
 3. compiles both with `/deterministic+` and a stable `/pathmap`;
 4. requires identical executable bytes and SHA-256 values;
 5. rejects overwrite of existing release artifacts;
-6. copies the reviewed release README, installation procedure, and security
-   policy into the package;
+6. copies the reviewed release README, installation procedure, security
+   policy, and Apache License 2.0 terms into the package;
 7. emits unsigned release metadata and a `SHA256SUMS` that covers those
    documents and every other packaged file; and
 8. creates a sorted ZIP with fixed entry timestamps plus a sidecar SHA-256.
@@ -69,13 +69,13 @@ both its text and executable byte representations for private identity,
 environment, signing, and credential material. It also verifies that release
 metadata, the extension manifest, and the Native Host file version all carry
 2.0.1. It requires byte-exact packaged copies of the release README,
-installation procedure, and security policy, and confirms that `SHA256SUMS`
-covers them. The 2.0.1 gate additionally pins the reviewed private/public
-cross-channel unsigned Native Host SHA-256 so that packaging-only differences
-cannot silently change the shared executable. The pinned value is the 2.0.1
-pre-signing executable, not the separate 2.0.0 rollback-lab fixture. A source
-or version change requires a new reviewed compatibility hash rather than
-weakening this assertion.
+installation procedure, security policy, and license, and confirms that
+`SHA256SUMS` covers them. The 2.0.1 gate additionally pins the reviewed
+private/public cross-channel unsigned Native Host SHA-256 so that
+packaging-only differences cannot silently change the shared executable. The
+pinned value is the 2.0.1 pre-signing executable, not the separate 2.0.0
+rollback-lab fixture. A source or version change requires a new reviewed
+compatibility hash rather than weakening this assertion.
 
 `Test-NativeHostDestination.ps1` exercises the compiled Host in a short-lived
 Windows PowerShell child process. It covers local volume roots, native UNC

@@ -57,6 +57,10 @@ try {
         [pscustomobject]@{
             Source = 'SECURITY.md'
             Packaged = 'SECURITY.md'
+        },
+        [pscustomobject]@{
+            Source = 'LICENSE'
+            Packaged = 'LICENSE'
         }
     )
     $sumLines = @(Get-Content -LiteralPath (Join-Path $release.Package 'SHA256SUMS') -Encoding UTF8)
@@ -73,8 +77,8 @@ try {
             $_ -cmatch ('^[0-9A-F]{64}  ' + [regex]::Escape($document.Packaged) + '$')
         }).Count -eq 1) ('SHA256SUMS covers ' + $document.Packaged)
     }
-    Assert-True (-not (Test-Path -LiteralPath (Join-Path $release.Package 'LICENSE') -PathType Leaf)) `
-        'builder does not fabricate a license file before a license decision'
+    Assert-True (Test-Path -LiteralPath (Join-Path $release.Package 'LICENSE') -PathType Leaf) `
+        'package contains the selected Apache License 2.0 text'
 
     $representations = [Collections.Generic.List[string]]::new()
     foreach ($file in Get-ChildItem -LiteralPath $release.Package -File -Recurse) {
@@ -87,11 +91,14 @@ try {
     $packageContent = $representations -join "`n"
     $formerDomainMarker = 'si' + '73'
     $formerOrganizationMarker = 'CT' + 'ES'
+    $packageContentWithoutApprovedOwner = $packageContent.Replace('ctes-08', '')
 
     Assert-True ($packageContent.IndexOf($formerDomainMarker, [StringComparison]::OrdinalIgnoreCase) -lt 0) `
         'package contains no former private domain marker'
-    Assert-True ($packageContent.IndexOf($formerOrganizationMarker, [StringComparison]::OrdinalIgnoreCase) -lt 0) `
-        'package contains no former private organization marker'
+    Assert-True ($packageContentWithoutApprovedOwner.IndexOf(
+        $formerOrganizationMarker,
+        [StringComparison]::OrdinalIgnoreCase
+    ) -lt 0) 'package contains no former private organization marker beyond the approved GitHub owner'
     Assert-True ($packageContent -notmatch '192\.168\.[0-9]+\.[0-9]+') `
         'package contains no household IPv4 address'
     Assert-True ($packageContent -notmatch '(?i)\b[A-Z]:\\Users\\') `

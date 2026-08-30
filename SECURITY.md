@@ -4,6 +4,10 @@ Never attach an unredacted Taipower HAR, SESSION, enkey, electric number,
 account identifier, Home Assistant token, pairing credential, SMB credential,
 browser profile, signing key, or private certificate to a public issue.
 
+Report a suspected vulnerability privately through the repository's
+[Security Advisories](https://github.com/ctes-08/taipower-ami-windows/security/advisories/new)
+page. Do not disclose credentials or identifying captures in a public issue.
+
 The supported workflow is user-authorized and read-only. It does not bypass
 human verification, automate login, expose a general Home Assistant token,
 or run the Native Messaging host with administrator privileges.

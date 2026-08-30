@@ -15,9 +15,9 @@ version **2.0.1**:
 - deterministic unsigned release construction with SHA-256 provenance.
 
 Built unsigned archives also carry an offline release README, the complete
-installation procedure, and the security policy. All three files are included
-in `SHA256SUMS`; the installer rejects a package when they are missing or have
-changed.
+installation procedure, the security policy, and the Apache License 2.0 text.
+All four files are included in `SHA256SUMS`; the installer rejects a package
+when they are missing or have changed.
 
 The user signs in to the official Taipower website in a normal visible Chrome
 window and completes any human verification personally. The project does not
@@ -38,8 +38,8 @@ not part of the locked byte-for-byte archive format. This restriction applies
 to release construction, not to normal Native Host execution.
 
 The Home Assistant custom integration is maintained in the separate
-`taipower-ami-ha` repository. HACS installs only that integration; it cannot
-install this Windows Companion.
+[`taipower-ami-ha`](https://github.com/ctes-08/taipower-ami-ha) repository.
+HACS installs only that integration; it cannot install this Windows Companion.
 
 ## Operator configuration
 
@@ -96,6 +96,9 @@ branch ruleset (shown under `Public Windows gate` in the Actions UI), review the
 issue privacy warning, and repeat the full-history secret scan from a fresh
 clone.
 
-No open-source license has been selected yet. Private validation does not grant
-redistribution rights; a deliberate license decision is required before the
-repository becomes public.
+## License
+
+Copyright 2026 ctes-08 and contributors.
+
+Licensed under the [Apache License 2.0](LICENSE). The license is also included
+in every unsigned release archive and covered by its `SHA256SUMS`.

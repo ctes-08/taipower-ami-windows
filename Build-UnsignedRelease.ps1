@@ -49,6 +49,10 @@ $releaseDocuments = @(
     [pscustomobject]@{
         Source = 'SECURITY.md'
         Destination = 'SECURITY.md'
+    },
+    [pscustomobject]@{
+        Source = 'LICENSE'
+        Destination = 'LICENSE'
     }
 )
 

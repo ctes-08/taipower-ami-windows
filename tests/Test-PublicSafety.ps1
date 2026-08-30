@@ -159,10 +159,16 @@ try {
         'release builder requires a 64-bit process'
     Assert-True ($buildText -match [regex]::Escape('docs\RELEASE_README.md') -and
         $buildText -match [regex]::Escape('docs\INSTALLATION.md') -and
-        $buildText -match [regex]::Escape('SECURITY.md')) `
-        'release builder packages the reviewed offline operator documents'
-    Assert-True ($buildText -notmatch '(?i)LICENSE') `
-        'release builder does not fabricate a license before a license decision'
+        $buildText -match [regex]::Escape('SECURITY.md') -and
+        $buildText -match "Source = 'LICENSE'" -and
+        $buildText -match "Destination = 'LICENSE'") `
+        'release builder packages the reviewed offline documents and license'
+    $licenseText = Get-Content -LiteralPath (Join-Path $repoRoot 'LICENSE') -Raw -Encoding UTF8
+    Assert-True ($licenseText -match '(?m)^\s*Apache License\s*$' -and
+        $licenseText -match '(?m)^\s*Version 2\.0, January 2004\s*$') `
+        'repository contains the Apache License 2.0 text'
+    Assert-True ($licenseText -notmatch '\[yyyy\] ctes-08|Copyright 2026 ctes-08') `
+        'license text is not modified with a project-specific notice'
     $installationPowerShellBlocks = @([regex]::Matches(
         $installationText,
         '(?ms)^```powershell\r?\n(.*?)^```'
@@ -234,10 +240,16 @@ try {
     $allPublicText = $allPublicParts -join "`n"
     $formerDomainMarker = 'si' + '73'
     $formerOrganizationMarker = 'CT' + 'ES'
+    $publicTextWithoutApprovedOwner = $allPublicText.Replace('ctes-08', '')
+    Assert-True ($allPublicText -match [regex]::Escape(
+        'https://github.com/ctes-08/taipower-ami-windows'
+    )) 'public repository URL uses the approved GitHub owner'
     Assert-True ($allPublicText.IndexOf($formerDomainMarker, [StringComparison]::OrdinalIgnoreCase) -lt 0) `
         'no former private domain marker is embedded'
-    Assert-True ($allPublicText.IndexOf($formerOrganizationMarker, [StringComparison]::OrdinalIgnoreCase) -lt 0) `
-        'no former private organization marker is embedded'
+    Assert-True ($publicTextWithoutApprovedOwner.IndexOf(
+        $formerOrganizationMarker,
+        [StringComparison]::OrdinalIgnoreCase
+    ) -lt 0) 'no former private organization marker beyond the approved GitHub owner is embedded'
     Assert-True ($allPublicText -notmatch '192\.168\.[0-9]+\.[0-9]+') 'no household IPv4 address is embedded'
     Assert-True ($allPublicText -notmatch '\\\\192\.168\.') 'no household UNC path is embedded'
     Assert-True ($allPublicText -notmatch '(?i)\b[A-Z]:\\Users\\') 'no private Windows user profile path is embedded'

@@ -9,7 +9,8 @@ release-page copy of the installation procedure. After extraction, read the
 included `INSTALLATION.md` before running a script. It contains the exact
 SHA-256, Mark-of-the-Web, installation, Chrome unpacked-extension, and
 uninstall procedure. `SECURITY.md` defines the trust boundary and the
-information that must never be attached to a public issue.
+information that must never be attached to a public issue. `LICENSE` contains
+the Apache License 2.0 terms for this package.
 
 Package contents:
 
@@ -20,7 +21,8 @@ Package contents:
 - `release_metadata.json` — version, compatibility identity, provenance, and
   unsigned build status;
 - `SHA256SUMS` — exact coverage of every other file in the extracted package;
-- `INSTALLATION.md` and `SECURITY.md` — offline operator guidance.
+- `INSTALLATION.md` and `SECURITY.md` — offline operator guidance;
+- `LICENSE` — Apache License 2.0 terms.
 
 The user must sign in to the official Taipower website in a normal visible
 Chrome window and personally complete any human-verification step. This

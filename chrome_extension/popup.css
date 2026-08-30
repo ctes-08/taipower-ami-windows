@@ -1,0 +1,57 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, "Microsoft JhengHei", sans-serif;
+}
+
+body {
+  width: 330px;
+  margin: 0;
+}
+
+main {
+  padding: 16px;
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: 20px;
+}
+
+p {
+  line-height: 1.5;
+}
+
+button {
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: 8px;
+  background: #1687a7;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.status {
+  min-height: 24px;
+  font-weight: 700;
+}
+
+.status.ok {
+  color: #2e9b50;
+}
+
+.status.error {
+  color: #d14b45;
+}
+
+.privacy {
+  margin-bottom: 0;
+  font-size: 12px;
+  opacity: 0.75;
+}

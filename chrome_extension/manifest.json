@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "台電 AMI 交接至 Home Assistant（V2）",
+  "version": "2.0.1",
+  "description": "在正常登入台電後，將最小 AMI 授權安全交給本機 Home Assistant。",
+  "minimum_chrome_version": "120",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqgMKCtaEbWVgX3oyMgndDid3ufYMF6oBACmqgaTgn8+Y7VAbWUmsvo+FuNmqb6LBo4DyQ1S2M2M3BjTPC0B8UWWOF5064EtVWtTYkNZES0zOunDLhMfugEIuLCtbFUQJZA/GHhzUZsMx3qKGop2fCGavqJEl0Xbyn+a2aSS2mOnWgwiihLle6LKXeLVlNXbquMF1GQKwP0mzWL+dSxacaa0aj2mLtWsZXkhAtPXyAVynDoTDGSIMgWiiicVlx3kF6FhVKLJHCFslDjvS+jxf0Bzk+Roa2D0UsY+hDfy217iQi3V5bJVGpiCAKOwTqymcOnB53W8Q8PwaL9Xsmio3MQIDAQAB",
+  "permissions": [
+    "activeTab",
+    "cookies",
+    "nativeMessaging",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://service.taipower.com.tw/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "更新台電 AMI 授權",
+    "default_popup": "popup.html"
+  }
+}

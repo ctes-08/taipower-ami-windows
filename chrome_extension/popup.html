@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>台電 AMI 授權</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <h1>台電 AMI 授權</h1>
+      <p>請先在目前分頁正常登入台電，並停留在登入後首頁或 AMI 儀表板。</p>
+      <button id="handoff" type="button">驗證並更新 HA</button>
+      <p id="status" class="status" role="status" aria-live="polite">尚未執行</p>
+      <p class="privacy">只讀取台電網域的 SESSION 與 AMI 識別碼，不讀取帳密或其他網站 Cookie。</p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

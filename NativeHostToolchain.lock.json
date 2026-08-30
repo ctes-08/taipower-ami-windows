@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "toolchain_id": "vs18.5.4-roslyn5.5.0-netfx472-x64",
+  "kind": "pinned_visual_studio_roslyn",
+  "compiler_relative_path": "MSBuild\\Current\\Bin\\Roslyn\\csc.exe",
+  "target_framework_moniker": ".NETFramework,Version=v4.7.2",
+  "reference_root_relative_path": "Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.7.2",
+  "files": [
+    {
+      "role": "msbuild",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\MSBuild.exe",
+      "bytes": 516880,
+      "sha256": "81263DD8EC9F60137708BFE6FCB301773B881EB21A6831870A2BA025E02140B7",
+      "file_version": "18.5.4.18101",
+      "product_version": "18.5.4+cb4e32d21bd58cfed6b8599bb4780cf64bd15afc"
+    },
+    {
+      "role": "roslyn_csc",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\csc.exe",
+      "bytes": 65320,
+      "sha256": "4B1F1C1E5A936DE09E7B62AB074654BD68EDD43AF686A96D370F9A29264A1C16",
+      "file_version": "5.500.26.20813",
+      "product_version": "5.5.0-2.26208.13+3dc781932f83b0792b0d1717a68db3f9604a2cb1"
+    },
+    {
+      "role": "roslyn_csc_config",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\csc.exe.config",
+      "bytes": 6353,
+      "sha256": "2053A87E2F9F71D9C3CC02B9A737900398C2958F2958762B6E1282B12B547B26",
+      "file_version": null,
+      "product_version": null
+    },
+    {
+      "role": "roslyn_codeanalysis",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\Microsoft.CodeAnalysis.dll",
+      "bytes": 3631376,
+      "sha256": "3EFD0523F91DB4C5632AF01D911CE1D13C01AB8E4DB87C1C98B85FB18231E14B",
+      "file_version": "5.500.26.20813",
+      "product_version": "5.5.0-2.26208.13+3dc781932f83b0792b0d1717a68db3f9604a2cb1"
+    },
+    {
+      "role": "roslyn_csharp",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\Microsoft.CodeAnalysis.CSharp.dll",
+      "bytes": 7466296,
+      "sha256": "16C922BABD68D7EE31199726DA92C740771872F47BECD1E26CE455BBCF870ED0",
+      "file_version": "5.500.26.20813",
+      "product_version": "5.5.0-2.26208.13+3dc781932f83b0792b0d1717a68db3f9604a2cb1"
+    },
+    {
+      "role": "roslyn_system_buffers",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\System.Buffers.dll",
+      "bytes": 23816,
+      "sha256": "2D78D770C9CB997199154AE8C018B9F1D1EFBC86729F7264DDE6DBAD2A12CAC3",
+      "file_version": "4.600.125.16908",
+      "product_version": "4.6.1+6b84308c9ad012f53240d72c1d716d7e42546483"
+    },
+    {
+      "role": "roslyn_system_collections_immutable",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\System.Collections.Immutable.dll",
+      "bytes": 253192,
+      "sha256": "5BAA117252EE684E26903603596854B649BC25EDDCB0CDEF3B100658FC3C334C",
+      "file_version": "10.0.125.57005",
+      "product_version": "10.0.1+fad253f51b461736dfd3cd9c15977bb7493becef"
+    },
+    {
+      "role": "roslyn_system_memory",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\System.Memory.dll",
+      "bytes": 145200,
+      "sha256": "D5E8E4866F9CFA66F7765660F84B210198893E55335487AFE5EBDA342C0E913D",
+      "file_version": "4.600.325.20307",
+      "product_version": "4.6.3+f62ca0009b038cab4725a720f386623a969d73ad"
+    },
+    {
+      "role": "roslyn_system_numerics_vectors",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\System.Numerics.Vectors.dll",
+      "bytes": 110344,
+      "sha256": "20C2FA81B8C70D651099D762954F285FD4F942E63B2D7217C145DAB8D4B2F4C9",
+      "file_version": "4.600.125.16908",
+      "product_version": "4.6.1+6b84308c9ad012f53240d72c1d716d7e42546483"
+    },
+    {
+      "role": "roslyn_system_reflection_metadata",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\System.Reflection.Metadata.dll",
+      "bytes": 515336,
+      "sha256": "A1A9AAABF7651B26177E99E982D9F7DBE57B9AECE693F4F2770C28B27C2D26DF",
+      "file_version": "10.0.125.57005",
+      "product_version": "10.0.1+fad253f51b461736dfd3cd9c15977bb7493becef"
+    },
+    {
+      "role": "roslyn_system_runtime_unsafe",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\System.Runtime.CompilerServices.Unsafe.dll",
+      "bytes": 19256,
+      "sha256": "08CBD7278B66F1E68425A82D4B97181A4130D93E3DD91831407ABA7212CCDACF",
+      "file_version": "6.100.225.20307",
+      "product_version": "6.1.2+f62ca0009b038cab4725a720f386623a969d73ad"
+    },
+    {
+      "role": "roslyn_system_text_codepages",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\System.Text.Encoding.CodePages.dll",
+      "bytes": 766224,
+      "sha256": "B77EE852824A6E8098FBADE000BEB42CE9DF32FA4189A00D5E7F472F6C6A5030",
+      "file_version": "8.0.23.53103",
+      "product_version": "8.0.0+5535e31a712343a63f5d7d796cd874e563e5ac14"
+    },
+    {
+      "role": "roslyn_system_threading_tasks_extensions",
+      "base": "toolchain_root",
+      "path": "MSBuild\\Current\\Bin\\Roslyn\\System.Threading.Tasks.Extensions.dll",
+      "bytes": 27960,
+      "sha256": "AF4E13EF418FD89B432DE20CD1DFB7FA10A7179C8DD049C9856316E50C5949CA",
+      "file_version": "4.600.325.20307",
+      "product_version": "4.6.3+f62ca0009b038cab4725a720f386623a969d73ad"
+    },
+    {
+      "role": "netfx_mscorlib",
+      "base": "program_files_x86",
+      "path": "Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.7.2\\mscorlib.dll",
+      "bytes": 2727056,
+      "sha256": "A69849CF0B433664B14DBAEB82385EC043449F71F7C69559CBA4BE0DD3E8BE8D",
+      "file_version": "4.7.3062.0 built by: NET472REL1",
+      "product_version": "4.7.3062.0"
+    },
+    {
+      "role": "netfx_system",
+      "base": "program_files_x86",
+      "path": "Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.7.2\\System.dll",
+      "bytes": 1475208,
+      "sha256": "541C6067CC69A43660D06A4F0F6EAB0FEBCD33DF9089F209D99B7EA36682A0A5",
+      "file_version": "4.7.3062.0 built by: NET472REL1",
+      "product_version": "4.7.3062.0"
+    },
+    {
+      "role": "netfx_system_core",
+      "base": "program_files_x86",
+      "path": "Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.7.2\\System.Core.dll",
+      "bytes": 256664,
+      "sha256": "F9C65F2D44F244E1195802A68F5D8F3457CAEEF2E385CF28C534218749ADBE7F",
+      "file_version": "4.7.3062.0 built by: NET472REL1",
+      "product_version": "4.7.3062.0"
+    },
+    {
+      "role": "netfx_system_web_extensions",
+      "base": "program_files_x86",
+      "path": "Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.7.2\\System.Web.Extensions.dll",
+      "bytes": 1393344,
+      "sha256": "FDD4D1FE186A36F1DB6B927453590FD1D55BBCA39F916A5B815C75C719299156",
+      "file_version": "4.7.3062.0",
+      "product_version": "4.7.3062.0"
+    }
+  ]
+}
